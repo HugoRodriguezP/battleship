@@ -1,5 +1,6 @@
 package BattleShip;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public interface ScannerInterface {
@@ -23,4 +24,6 @@ public interface ScannerInterface {
 	public void setInt2(int num);
 	
 	public void setChar2(char letter);
+	
+	public void closeInnerWriter() throws IOException;
 }

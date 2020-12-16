@@ -13,7 +13,7 @@ import BattleShip.PlayerInterface;
 import BattleShip.ScannerInterface;
 import BattleShip.Square;
 
-public class Main {	
+public class GameRecorder {	
 	public static void createGame(ScannerInterface scanner) {
 		ArrayList<Square> squares1 = new ArrayList<Square>();
 		ArrayList<Square> squares2 = new ArrayList<Square>();
@@ -84,7 +84,7 @@ public class Main {
 		}
 		ScannerInterface scanner = new MockOurScanner(file, true);
 		try {
-			Main.createGame(scanner);
+			GameRecorder.createGame(scanner);
 		}
 		finally {
 			scanner.closeInnerWriter();

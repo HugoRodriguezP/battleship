@@ -9,7 +9,7 @@ public class GameView {
 	
 	/*Methods*/
 	
-	GameView(){
+	public GameView(){
 		
 	}
 	

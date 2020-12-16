@@ -11,13 +11,13 @@ import java.util.Scanner;
 import BattleShip.OurScanner;
 import BattleShip.ScannerInterface2;
 
-public class MockRecordingScanner2 implements ScannerInterface2 {
+public class RecordingScanner implements ScannerInterface2 {
 	private Scanner scanner;
 	private boolean record;
 	private FileWriter fileWriter;
 	
 	
-	public MockRecordingScanner2(File file, boolean record) throws IOException {
+	public RecordingScanner(File file, boolean record) throws IOException {
 		super();
 		if (record) {
 			this.record = true;

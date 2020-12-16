@@ -1,5 +1,6 @@
 package BattleShip;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -7,10 +8,10 @@ import java.util.Scanner;
 
 public class OurScanner implements ScannerInterface{
 
-	private Scanner sc;
+	protected ScannerInterface2 sc;
 	
 	public OurScanner(){
-		this.sc = new Scanner(System.in); 
+		this.sc = new OurScanner2();
 	}
 	
 	public String nextLine() {
@@ -63,6 +64,11 @@ public class OurScanner implements ScannerInterface{
 
 	public void setChar2(char letter) {
 		// TODO Auto-generated method stub	
+	}
+
+	@Override
+	public void closeInnerWriter() throws IOException {
+		sc.closeInnerWriter();
 	}
 	
 }

@@ -4,52 +4,43 @@
  */
 package prac2;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
-
+import BattleShip.Board;
+import BattleShip.GameController;
+import BattleShip.GameView;
+import BattleShip.Player;
+import BattleShip.PlayerInterface;
+import BattleShip.ScannerInterface;
+import BattleShip.Square;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
-import java.util.stream.Stream;
-
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DynamicNode;
-import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
-
-import BattleShip.Board;
-import BattleShip.GameController;
-import BattleShip.GameView;
-import BattleShip.MockScanner;
-import BattleShip.OurScanner;
-import BattleShip.Player;
-import BattleShip.PlayerInterface;
-import BattleShip.ScannerInterface;
-import BattleShip.Square;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class AutomaticGamesTest {
-	private final String PATH = "../../data/"; // Should end with a '/' or '\'.
-								   // Accept multiple sos path formats.
-	private final String FILENAME = "games.csv";
-	static public int M = 6; // N has the same value.
-	private List<Object> filemap;
-
-	/*
-	public void loadAllTests() {
-		testTest = DynamicTest.dynamicTest("a", () -> assertTrue(true));
-		testTest = DynamicTest.dynamicTest("a", AutomaticGamesTest::testTest);
-	}
-	*/
-	public void createGame(ScannerInterface scanner) {
+	private final static String PATH = "./data/"; // Should end with a '/' or '\'.
+		// Accept multiple sos path formats.
+	private final static String[] GAMES_FILENAMES = new String[] {"game1.txt"};
+	private final static String PARAMS_FILENAME = "games-parameters.csv";
+	static public int N = 7;
+	private static List<GameController> games;
+	private static BufferedReader paramsBufferedReader;
+	static final Lock lock = new ReentrantLock();
+	static final Condition testsFinshed = lock.newCondition();
+	private static Board player1Board;
+	private static Board player2Board;
+	
+	public static GameController createGame(ScannerInterface scanner) {
 		ArrayList<Square> squares1 = new ArrayList<Square>();
 		ArrayList<Square> squares2 = new ArrayList<Square>();
 		
@@ -86,12 +77,15 @@ public class AutomaticGamesTest {
 		Board board1 = new Board(squares1);
 		Board board2 = new Board(squares2);
 		
+		player1Board = board1;
+		player2Board = board2;
+		
 		PlayerInterface player1 = new Player("", board1);
 		PlayerInterface player2 = new Player("", board2);
 		
 		GameView view = new GameView();
 		
-		GameController game = new GameController(player1, player2, view, scanner);
+		GameController game = new MockGameController(player1, player2, view, scanner);
 		
 		game.setDataPlayerName(player1);
 		game.setDataPlayerName(player2);
@@ -106,26 +100,118 @@ public class AutomaticGamesTest {
 		game.setDataPlayerSubmarine(player2);
 		game.setDataPlayerLandingCraft(player2);
 		
-		game.play();
+		return game;
 	}
 	
 	@BeforeAll
-	public void setup() throws FileNotFoundException, IOException {
-		File file = new File(PATH.concat(FILENAME));
-		if(!file.exists() || (file.exists() && !file.canRead())) {
+	public static void setup() throws FileNotFoundException, IOException {
+		File paramsFile = new File(PATH.concat(PARAMS_FILENAME));
+		if(!paramsFile.exists()) {
 			throw new FileNotFoundException();
 		}
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		filemap = TestReader.getFilemapFromFile(br);
+		if(paramsFile.exists() && !paramsFile.canRead()) {
+			throw new IOException();
+		}
+		paramsBufferedReader = new BufferedReader(new FileReader(paramsFile));
+		games = new Vector<>();
+		for(String filename: GAMES_FILENAMES) {
+			File file = new File(PATH.concat(filename));
+			if(!file.exists()) {
+				throw new FileNotFoundException();
+			}
+			if(file.exists() && !file.canRead()) {
+				throw new IOException();
+			}
+			games.add(createGame(new MockOurScanner(file)));
+		}
 	}
 	
-	@TestFactory
-	public Collection<DynamicNode> allGamesTest() {
-		List<DynamicNode> gamesCollection = new Vector<>();
-		ScannerInterface scanner;
-		for(int i = 0; i < filemap.size(); i++) {
-			scanner = new MockScanner();
-			createGame(scanner);
+	public void testTest() {
+		assertTrue(false);
+	}
+	
+	@Test
+	public void runGame() throws InterruptedException {
+		for(GameController game: games) {
+			game.play();
+			try {
+				lock.lock();
+				testsFinshed.wait();
+			}
+			finally {
+				lock.unlock();
+			}
+		}
+		assertTrue(true);
+	}
+	private String[] filterLine(BufferedReader bufferedReader, 
+			                        boolean endOfFile) throws IOException {
+		String[] treathedLine = new String[N];
+		String line;
+		if((line = bufferedReader.readLine()) != null) {
+			int i2 = -1;
+			for(int i1 = 0; i1 < N - 1; i1++) {
+				i2 = line.indexOf(";", i2 + 1);
+				treathedLine[i1] = line.substring(0, i2);
+			}
+			treathedLine[N - 1] = line.substring(i2);
+			endOfFile = false;
+			return treathedLine;
+		}
+		else {
+			endOfFile = true;
+			return null;
+		}
+	}
+	
+	public class TestSuite1 {
+		@Test
+		public void boardEndOfGameTest() throws InterruptedException, IOException {
+			boolean endOfFile;
+			int i = 0;
+			for(GameController game: games) {
+				try {
+					MockGameController.lock.lock();
+					MockGameController.endOfGame.await();
+				}
+				finally {
+					MockGameController.lock.unlock();
+				}
+				endOfFile = false;
+				String[] param;
+				while(true) {
+					param = filterLine(paramsBufferedReader, endOfFile);
+					if(param[0] != GAMES_FILENAMES[i] || endOfFile) {
+						break;
+					}
+					boolean checkPlayer1Board = Boolean.getBoolean(param[1]);
+					Board board;
+					if(checkPlayer1Board) {
+						board = player1Board;
+					}
+					else {
+						board = player2Board;
+					}
+					char letter = param[2].charAt(0);
+					int number = Integer.getInteger(param[3]);
+					int iBoard = board.getPosition(new Square(letter, number));
+					Square square = board.getBoard().get(iBoard);
+					boolean occupied = Boolean.getBoolean(param[4]);
+					boolean visited = Boolean.getBoolean(param[5]);
+					boolean touched = Boolean.getBoolean(param[6]);
+					assertEquals(occupied, square.getOccupied());
+					assertEquals(visited, square.getVisited());
+					assertEquals(touched, square.getTouched());
+				}
+				i++;
+				try {
+					lock.lock();
+					testsFinshed.signal();
+				}
+				finally {
+					lock.unlock();
+				}
+			}
 		}
 	}
 }

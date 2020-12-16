@@ -4,6 +4,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.junit.internal.TextListener;
+import org.junit.runner.JUnitCore;
+
 import BattleShip.GameController;
 import BattleShip.GameView;
 import BattleShip.PlayerInterface;
@@ -20,12 +23,8 @@ public class MockGameController extends GameController {
 	@Override
 	public void play() {
 		super.play();
-		try {
-			lock.lock();
-			endOfGame.signal();
-		}
-		finally {
-			lock.unlock();
-		}
+		JUnitCore junit = new JUnitCore();
+		junit.addListener(new TextListener(System.out));
+		junit.run(TestClass1.class);
 	}
 }

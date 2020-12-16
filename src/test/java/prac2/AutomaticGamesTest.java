@@ -25,7 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AutomaticGamesTest {
 	private final static String PATH = "./data/"; // Should end with a '/' or '\'.
 		                                          // Accept multiple sos path formats.
-	public final static String[] GAMES_FILENAMES = new String[] {"game1.txt"};
+	public final static String[] GAMES_FILENAMES = new String[] {"game1.txt",
+			"game2.txt","game3.txt", "game4.txt","game5.txt", "game6.txt"};
 	public final static String PARAMS_FILENAME = "games-parameters.csv";
 	public static BufferedReader paramsBufferedReader;
 	public static Board player1Board;

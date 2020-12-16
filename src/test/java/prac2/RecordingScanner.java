@@ -18,7 +18,6 @@ public class RecordingScanner implements ScannerInterface2 {
 	
 	
 	public RecordingScanner(File file, boolean record) throws IOException {
-		super();
 		if (record) {
 			this.record = true;
 			scanner = new Scanner(System.in);
@@ -71,7 +70,6 @@ public class RecordingScanner implements ScannerInterface2 {
 	}
 	
 	public void closeInnerWriter() throws IOException {
-		fileWriter.flush();
 		fileWriter.close();
 	}
 }

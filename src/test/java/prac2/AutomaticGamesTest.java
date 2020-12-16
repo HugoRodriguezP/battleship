@@ -17,13 +17,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,15 +24,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class AutomaticGamesTest {
 	private final static String PATH = "./data/"; // Should end with a '/' or '\'.
-		// Accept multiple sos path formats.
+		                                          // Accept multiple sos path formats.
 	public final static String[] GAMES_FILENAMES = new String[] {"game1.txt"};
 	public final static String PARAMS_FILENAME = "games-parameters.csv";
 	public static BufferedReader paramsBufferedReader;
-	static final Lock lock = new ReentrantLock();
-	static final Condition testsFinshed = lock.newCondition();
 	public static Board player1Board;
 	public static Board player2Board;
-	
 	private static GameController game;
 	private static int i;
 	
